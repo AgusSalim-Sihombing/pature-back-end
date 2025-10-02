@@ -234,7 +234,7 @@ app.post('/submit-answers', async (req, res) => {
         if (!subtopik || !all_subtopik.includes(subtopik) || !Array.isArray(jawaban) || !Array.isArray(kunci_jawaban) || jawaban.length !== 5 || kunci_jawaban.length !== 5) {
             return res.status(400).json({ error: `Invalid input untuk subtopik ${subtopik}: jawaban dan kunci_jawaban harus array 5 elemen` });
         }
-
+ 
         let skor = 0;
         for (let i = 0; i < jawaban.length; i++) {
             if (jawaban[i] === kunci_jawaban[i]) {
@@ -254,8 +254,8 @@ app.post('/submit-answers', async (req, res) => {
     // Jalankan Python
     activeProcesses++;
     console.log(`[LOG] Processing request for student_id: ${student_id}, Active processes: ${activeProcesses}`);
-
-    const pythonProcess = spawn('python3', ['models2/predict.py', JSON.stringify(full_scores)]);
+    console.log("Full scores yang dikirim ke Python:", full_scores);
+    const pythonProcess = spawn('C:/Users/LENOVO/AppData/Local/Programs/Python/Python313/python.exe', ['models2/predict.py', JSON.stringify(full_scores)]);
 
     let output = '';
     pythonProcess.stdout.on('data', (data) => {
@@ -291,7 +291,7 @@ app.post('/submit-answers', async (req, res) => {
         activeProcesses--;
         console.error(`[ERROR] Python process error for ${student_id}: ${err.message}`);
         return res.status(500).json({ error: `Python process failed: ${err.message}` });
-    });
+    }); 
 });
 
 app.listen(port, () => {
