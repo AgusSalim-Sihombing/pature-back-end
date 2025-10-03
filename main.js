@@ -138,7 +138,7 @@
 //     // Hitung skor untuk setiap sub-topik
 //     const scores = {};
 //     const skor_per_subtopik = {};
-    
+
 //     for (const item of subtopiks) {
 //         const { subtopik, jawaban, kunci_jawaban } = item;
 //         if (!subtopik || !all_subtopik.includes(subtopik) || !Array.isArray(jawaban) || !Array.isArray(kunci_jawaban) || jawaban.length !== 5 || kunci_jawaban.length !== 5) {
@@ -196,6 +196,216 @@
 //     console.log(`Server running at http://localhost:${port}`);
 // });
 
+// const express = require('express');
+// const bodyParser = require('body-parser');
+// const { spawn } = require('child_process');
+// const cors = require('cors');
+// const app = express();
+// const port = process.env.PORT || 3000;
+
+// app.use(cors());
+// app.use(bodyParser.json());
+
+// // Batasi jumlah concurrent Python processes (opsional)
+// const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
+// const maxPythonProcesses = 10; // Sesuaikan dengan spesifikasi server
+// let activeProcesses = 0;
+
+// // Endpoint untuk submit jawaban
+// app.post('/submit-answers', async (req, res) => {
+//     if (activeProcesses >= maxPythonProcesses) {
+//         return res.status(429).json({ error: 'Server sibuk, coba lagi nanti' });
+//     }
+
+//     const { student_id, subtopiks } = req.body;
+
+//     // Validasi input
+//     if (!subtopiks || !Array.isArray(subtopiks) || subtopiks.length === 0) {
+//         return res.status(400).json({ error: 'Invalid input: subtopiks harus array non-kosong' });
+//     }
+
+//     const all_subtopik = ['penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran', 'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan', 'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat', 'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar', 'luas_permukaan_bangun_ruang', 'volumne_bangun_ruang', 'data', 'peluang'];
+
+//     // Hitung skor
+//     const scores = {};
+//     const skor_per_subtopik = {};
+//     for (const item of subtopiks) {
+//         const { subtopik, jawaban, kunci_jawaban } = item;
+//         if (!subtopik || !all_subtopik.includes(subtopik) || !Array.isArray(jawaban) || !Array.isArray(kunci_jawaban) || jawaban.length !== 5 || kunci_jawaban.length !== 5) {
+//             return res.status(400).json({ error: `Invalid input untuk subtopik ${subtopik}: jawaban dan kunci_jawaban harus array 5 elemen` });
+//         }
+
+//         let skor = 0;
+//         for (let i = 0; i < jawaban.length; i++) {
+//             if (jawaban[i] === kunci_jawaban[i]) {
+//                 skor++;
+//             }
+//         }
+//         scores[subtopik] = skor;
+//         skor_per_subtopik[subtopik] = skor;
+//     }
+
+//     // Isi skor default
+//     const full_scores = {};
+//     all_subtopik.forEach(st => {
+//         full_scores[st] = scores[st] !== undefined ? scores[st] : 3;
+//     });
+
+//     // Jalankan Python
+//     activeProcesses++;
+//     console.log(`[LOG] Processing request for student_id: ${student_id}, Active processes: ${activeProcesses}`);
+//     console.log("Full scores yang dikirim ke Python:", full_scores);
+//     const pythonProcess = spawn('C:/Users/LENOVO/AppData/Local/Programs/Python/Python313/python.exe', ['models2/predict.py', JSON.stringify(full_scores)]);
+
+//     let output = '';
+//     pythonProcess.stdout.on('data', (data) => {
+//         output += data.toString();
+//     });
+
+//     pythonProcess.stderr.on('data', (data) => {
+//         console.error(`[ERROR] Python Error for ${student_id}: ${data}`);
+//     });
+
+//     pythonProcess.on('close', (code) => {
+//         activeProcesses--;
+//         console.log(`[LOG] Completed request for ${student_id}, Active processes: ${activeProcesses}`);
+
+//         try {
+//             const result = JSON.parse(output.trim());
+//             if (result.error) {
+//                 return res.status(500).json({ error: `ML Prediction failed: ${result.error}` });
+//             }
+//             return res.json({
+//                 student_id: student_id,
+//                 skor_per_subtopik: skor_per_subtopik,
+//                 max_skor: 5,
+//                 prediksi_kelemahan: result.predicted,
+//                 feedback: `Skor: ${JSON.stringify(skor_per_subtopik)}. Kelemahan utama: ${result.predicted}`
+//             });
+//         } catch (e) {
+//             return res.status(500).json({ error: `Parse error in Python output: ${e.message}` });
+//         }
+//     });
+
+//     pythonProcess.on('error', (err) => {
+//         activeProcesses--;
+//         console.error(`[ERROR] Python process error for ${student_id}: ${err.message}`);
+//         return res.status(500).json({ error: `Python process failed: ${err.message}` });
+//     }); 
+// });
+
+// app.listen(port, () => {
+//     console.log(`Server running at http://localhost:${port}`);
+// });
+
+// const express = require('express');
+// const bodyParser = require('body-parser');
+// const { spawn } = require('child_process');
+// const cors = require('cors');
+// const app = express();
+// const port = process.env.PORT || 3000;
+
+// app.use(cors());
+// app.use(bodyParser.json());
+
+// const maxPythonProcesses = 10;
+// let activeProcesses = 0;
+
+// app.post('/submit-answers', async (req, res) => {
+//     if (activeProcesses >= maxPythonProcesses) {
+//         return res.status(429).json({ error: 'Server sibuk, coba lagi nanti' });
+//     }
+
+//     const { student_id, subtopiks } = req.body;
+//     const threshold = 2; // Sub-topik lemah jika skor <=2
+
+//     if (!subtopiks || !Array.isArray(subtopiks) || subtopiks.length === 0) {
+//         return res.status(400).json({ error: 'Invalid input: subtopiks harus array non-kosong' });
+//     }
+
+//     const all_subtopik = [
+//         'penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran',
+//         'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan',
+//         'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat',
+//         'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar',
+//         'luas_permukaan_bangun_ruang', 'volume_bangun_ruang', 'data', 'peluang',
+//         'pembagian_desimal', 'perkalian_desimal', 'pengurangan_desimal', 'penjumlahan_desimal'
+//     ];
+
+//     const scores = {};
+//     const skor_per_subtopik = {};
+//     for (const item of subtopiks) {
+//         const { subtopik, jawaban, kunci_jawaban } = item;
+//         if (!subtopik || !all_subtopik.includes(subtopik) || !Array.isArray(jawaban) || !Array.isArray(kunci_jawaban) || jawaban.length !== 5 || kunci_jawaban.length !== 5) {
+//             return res.status(400).json({ error: `Invalid input untuk subtopik ${subtopik}: jawaban dan kunci_jawaban harus array 5 elemen` });
+//         }
+
+//         let skor = 0;
+//         for (let i = 0; i < jawaban.length; i++) {
+//             if (String(jawaban[i]) === String(kunci_jawaban[i])) { // Pastikan string
+//                 skor++;
+//             }
+//         }
+//         scores[subtopik] = skor;
+//         skor_per_subtopik[subtopik] = skor;
+//     }
+
+//     const full_scores = {};
+//     all_subtopik.forEach(st => {
+//         full_scores[st] = scores[st] !== undefined ? scores[st] : 3;
+//     });
+
+//     activeProcesses++;
+//     console.log(`[LOG] Processing request for ${student_id}, Active processes: ${activeProcesses}`);
+//     console.log("Full scores:", full_scores);
+
+//     const pythonProcess = spawn('C:/Users/LENOVO/AppData/Local/Programs/Python/Python313/python.exe', ['models2/predict.py', JSON.stringify(full_scores)]);
+//     let output = '';
+//     pythonProcess.stdout.on('data', (data) => {
+//         output += data.toString();
+//     });
+
+//     pythonProcess.stderr.on('data', (data) => {
+//         console.error(`[ERROR] Python Error for ${student_id}: ${data}`);
+//     });
+
+//     pythonProcess.on('close', (code) => {
+//         activeProcesses--;
+//         console.log(`[LOG] Completed request for ${student_id}, Active processes: ${activeProcesses}`);
+
+//         try {
+//             const result = JSON.parse(output.trim());
+//             if (result.error) {
+//                 return res.status(500).json({ error: `ML Prediction failed: ${result.error}` });
+//             }
+
+//             // Deteksi sub-topik lemah berdasarkan threshold
+//             const subtopik_lemah = Object.keys(full_scores).filter(st => full_scores[st] <= threshold);
+
+//             return res.json({
+//                 student_id,
+//                 skor_per_subtopik,
+//                 max_skor: 5,
+//                 prediksi_kelemahan_utama: result.predicted,
+//                 subtopik_lemah,
+//                 feedback: `Skor: ${JSON.stringify(skor_per_subtopik)}. Kelemahan utama: ${result.predicted}. Sub-topik lemah lainnya: ${subtopik_lemah.join(', ') || 'Tidak ada'}.`
+//             });
+//         } catch (e) {
+//             return res.status(500).json({ error: `Parse error: ${e.message}` });
+//         }
+//     });
+
+//     pythonProcess.on('error', (err) => {
+//         activeProcesses--;
+//         console.error(`[ERROR] Python process error for ${student_id}: ${err.message}`);
+//         return res.status(500).json({ error: `Python process failed: ${err.message}` });
+//     });
+// });
+
+// app.listen(port, () => {
+//     console.log(`Server running at http://localhost:${port}`);
+// });
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const { spawn } = require('child_process');
@@ -206,38 +416,46 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Batasi jumlah concurrent Python processes (opsional)
-const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
-const maxPythonProcesses = 10; // Sesuaikan dengan spesifikasi server
+const maxPythonProcesses = 10;
 let activeProcesses = 0;
 
-// Endpoint untuk submit jawaban
 app.post('/submit-answers', async (req, res) => {
     if (activeProcesses >= maxPythonProcesses) {
         return res.status(429).json({ error: 'Server sibuk, coba lagi nanti' });
     }
 
     const { student_id, subtopiks } = req.body;
+    const threshold = 2;
 
-    // Validasi input
     if (!subtopiks || !Array.isArray(subtopiks) || subtopiks.length === 0) {
         return res.status(400).json({ error: 'Invalid input: subtopiks harus array non-kosong' });
     }
 
-    const all_subtopik = ['penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran', 'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan', 'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat', 'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar', 'luas_permukaan_bangun_ruang', 'volumne_bangun_ruang', 'data', 'peluang'];
+    const all_subtopik = [
+        'penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran',
+        'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan',
+        'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat',
+        'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar', // Perbaiki ke keliling_bangun_ruang
+        'luas_permukaan_bangun_ruang', 'volume_bangun_ruang', 'data', 'peluang',
+        'pembagian_desimal', 'perkalian_desimal', 'pengurangan_desimal', 'penjumlahan_desimal'
+    ]; 
 
-    // Hitung skor
     const scores = {};
     const skor_per_subtopik = {};
     for (const item of subtopiks) {
         const { subtopik, jawaban, kunci_jawaban } = item;
+        console.log(`Validasi subtopik: ${subtopik}, Jawaban: ${JSON.stringify(jawaban)}, Kunci: ${JSON.stringify(kunci_jawaban)}`);
         if (!subtopik || !all_subtopik.includes(subtopik) || !Array.isArray(jawaban) || !Array.isArray(kunci_jawaban) || jawaban.length !== 5 || kunci_jawaban.length !== 5) {
             return res.status(400).json({ error: `Invalid input untuk subtopik ${subtopik}: jawaban dan kunci_jawaban harus array 5 elemen` });
         }
- 
+        // Validasi jawaban tidak kosong
+        if (jawaban.some(j => j === "")) {
+            return res.status(400).json({ error: `Invalid input untuk subtopik ${subtopik}: jawaban tidak boleh kosong` });
+        }
+
         let skor = 0;
         for (let i = 0; i < jawaban.length; i++) {
-            if (jawaban[i] === kunci_jawaban[i]) {
+            if (String(jawaban[i]) === String(kunci_jawaban[i])) {
                 skor++;
             }
         }
@@ -245,18 +463,16 @@ app.post('/submit-answers', async (req, res) => {
         skor_per_subtopik[subtopik] = skor;
     }
 
-    // Isi skor default
     const full_scores = {};
     all_subtopik.forEach(st => {
         full_scores[st] = scores[st] !== undefined ? scores[st] : 3;
     });
 
-    // Jalankan Python
     activeProcesses++;
-    console.log(`[LOG] Processing request for student_id: ${student_id}, Active processes: ${activeProcesses}`);
-    console.log("Full scores yang dikirim ke Python:", full_scores);
-    const pythonProcess = spawn('C:/Users/LENOVO/AppData/Local/Programs/Python/Python313/python.exe', ['models2/predict.py', JSON.stringify(full_scores)]);
+    console.log(`[LOG] Processing request for ${student_id}, Active processes: ${activeProcesses}`);
+    console.log("Full scores:", full_scores);
 
+    const pythonProcess = spawn('C:/Users/LENOVO/AppData/Local/Programs/Python/Python313/python.exe', ['models2/predict.py', JSON.stringify(full_scores)]);
     let output = '';
     pythonProcess.stdout.on('data', (data) => {
         output += data.toString();
@@ -275,15 +491,19 @@ app.post('/submit-answers', async (req, res) => {
             if (result.error) {
                 return res.status(500).json({ error: `ML Prediction failed: ${result.error}` });
             }
+
+            const subtopik_lemah = Object.keys(scores).filter(st => scores[st] <= threshold);
+
             return res.json({
-                student_id: student_id,
-                skor_per_subtopik: skor_per_subtopik,
+                student_id,
+                skor_per_subtopik,
                 max_skor: 5,
-                prediksi_kelemahan: result.predicted,
-                feedback: `Skor: ${JSON.stringify(skor_per_subtopik)}. Kelemahan utama: ${result.predicted}`
+                prediksi_kelemahan_utama: result.predicted,
+                subtopik_lemah,
+                feedback: `Skor: ${JSON.stringify(skor_per_subtopik)}. Kelemahan utama: ${result.predicted}. Sub-topik lemah lainnya: ${subtopik_lemah.join(', ') || 'Tidak ada'}.`
             });
         } catch (e) {
-            return res.status(500).json({ error: `Parse error in Python output: ${e.message}` });
+            return res.status(500).json({ error: `Parse error: ${e.message}` });
         }
     });
 
@@ -291,7 +511,7 @@ app.post('/submit-answers', async (req, res) => {
         activeProcesses--;
         console.error(`[ERROR] Python process error for ${student_id}: ${err.message}`);
         return res.status(500).json({ error: `Python process failed: ${err.message}` });
-    }); 
+    });
 });
 
 app.listen(port, () => {

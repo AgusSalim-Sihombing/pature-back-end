@@ -26,17 +26,59 @@
 # # Output JSON
 # print(json.dumps({"predicted": predicted_weak}))
 
+# import sys
+# import json
+# import pandas as pd
+# import joblib
+# import os
+# import warnings
+# warnings.filterwarnings('ignore')  # Abaikan warning scikit-learn
+
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# # Load model dan encoder
+# try:
+#     rf_model = joblib.load(os.path.join(BASE_DIR, 'rf_model.pkl'))
+#     le = joblib.load(os.path.join(BASE_DIR, 'label_encoder.pkl'))
+# except Exception as e:
+#     print(json.dumps({"error": f"Failed to load model: {str(e)}"}))
+#     sys.exit(1)
+
+# # Ambil input dari Express
+# try:
+#     input_data = sys.argv[1]
+#     scores = json.loads(input_data)
+# except Exception as e:
+#     print(json.dumps({"error": f"Invalid input data: {str(e)}"}))
+#     sys.exit(1)
+
+# # Buat DataFrame untuk prediksi
+# feature_cols = ['penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran', 'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan', 'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat', 'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar', 'luas_permukaan_bangun_ruang', 'volumne_bangun_ruang', 'data', 'peluang']
+# try:
+#     new_df = pd.DataFrame([scores])[feature_cols]
+# except Exception as e:
+#     print(json.dumps({"error": f"DataFrame creation failed: {str(e)}"}))
+#     sys.exit(1)
+
+# # Prediksi
+# try:
+#     prediction_encoded = rf_model.predict(new_df)[0]
+#     predicted_weak = le.inverse_transform([prediction_encoded])[0]
+#     print(json.dumps({"predicted": predicted_weak}))
+# except Exception as e:
+#     print(json.dumps({"error": f"Prediction failed: {str(e)}"}))
+#     sys.exit(1)
+
 import sys
 import json
-import pandas as pd
 import joblib
+import pandas as pd
 import os
 import warnings
-warnings.filterwarnings('ignore')  # Abaikan warning scikit-learn
+warnings.filterwarnings('ignore')
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Load model dan encoder
 try:
     rf_model = joblib.load(os.path.join(BASE_DIR, 'rf_model.pkl'))
     le = joblib.load(os.path.join(BASE_DIR, 'label_encoder.pkl'))
@@ -44,7 +86,6 @@ except Exception as e:
     print(json.dumps({"error": f"Failed to load model: {str(e)}"}))
     sys.exit(1)
 
-# Ambil input dari Express
 try:
     input_data = sys.argv[1]
     scores = json.loads(input_data)
@@ -52,15 +93,21 @@ except Exception as e:
     print(json.dumps({"error": f"Invalid input data: {str(e)}"}))
     sys.exit(1)
 
-# Buat DataFrame untuk prediksi
-feature_cols = ['penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran', 'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan', 'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat', 'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar', 'luas_permukaan_bangun_ruang', 'volumne_bangun_ruang', 'data', 'peluang']
+feature_cols = [
+    'penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran',
+        'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan',
+        'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat',
+        'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar',
+        'luas_permukaan_bangun_ruang', 'volume_bangun_ruang', 'data', 'peluang',
+        'pembagian_desimal', 'perkalian_desimal', 'pengurangan_desimal', 'penjumlahan_desimal'
+]
+
 try:
-    new_df = pd.DataFrame([scores])[feature_cols]
+    full_scores = {col: scores.get(col, 3) for col in feature_cols}
+    new_df = pd.DataFrame([full_scores])[feature_cols]
 except Exception as e:
     print(json.dumps({"error": f"DataFrame creation failed: {str(e)}"}))
     sys.exit(1)
-
-# Prediksi
 try:
     prediction_encoded = rf_model.predict(new_df)[0]
     predicted_weak = le.inverse_transform([prediction_encoded])[0]
