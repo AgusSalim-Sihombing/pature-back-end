@@ -300,46 +300,19 @@ var subtopiks = [
     }
 ];
 
-var filteredSubtopiks = subtopiks.filter(item => {
-    const allEmpty = item.jawaban.every(j => j === "");
-    if (allEmpty) {
-        console.log(`Sub-topik ${item.subtopik} diabaikan karena semua jawaban kosong`);
-        return false;
-    }
-    return true;
-});
+
 
 var student_id = player.GetVar("namalengkap") || "ANONIM";
 
-// Validasi dan debug
-var allValid = true;
-filteredSubtopiks.forEach(item => {
-    console.log(`Sub-topik: ${item.subtopik}, Jawaban: ${JSON.stringify(item.jawaban)}`);
-    if (item.jawaban.some(j => j === "")) {
-        console.error(`Error: Jawaban kosong di ${item.subtopik}`);
-        allValid = false;
-    }
-    if (item.jawaban.length !== 5) {
-        console.error(`Error: Panjang jawaban tidak 5 di ${item.subtopik}`);
-        allValid = false;
-    }
-});
 
-if (!allValid || filteredSubtopiks.length === 0) {
-    player.SetVar("Feedback", "Harap isi semua jawaban untuk setidaknya satu sub-topik!");
-    player.ShowLayer("ErrorLayer");
-    alert("Harap isi semua jawaban untuk setidaknya satu sub-topik!");
-    return;
-}
+console.log("Payload dikirim ke backend:", { student_id, subtopiks });
 
-console.log("Payload dikirim ke backend:", { student_id, subtopiks: filteredSubtopiks });
-
-fetch('http://localhost:3000/submit-answers', {
+fetch('https://pature-project-7e90b5e8ea2d.herokuapp.com/submit-answers', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ student_id, subtopiks: filteredSubtopiks })
+    body: JSON.stringify({ student_id, subtopiks })
 })
     .then(response => {
         if (!response.ok) {
@@ -351,11 +324,18 @@ fetch('http://localhost:3000/submit-answers', {
     })
     .then(data => {
         player.SetVar("SkorPerSubTopik", JSON.stringify(data.skor_per_subtopik));
+        var skorFormatted = "";
+        for (var key in data.skor_per_subtopik) {
+            skorFormatted += key + " : " + data.skor_per_subtopik[key] + ", ";
+        }
+        skorFormatted = skorFormatted.slice(0, -2);
+        
+        player.SetVar("SkorFormatted", skorFormatted);
         player.SetVar("PrediksiKelemahan", data.prediksi_kelemahan_utama);
         player.SetVar("SubTopikLemah", data.subtopik_lemah.join(', ') || "Tidak ada");
         player.SetVar("Feedback", data.feedback);
         // player.ShowLayer("FeedbackLayer");
-        alert(`Halo ${student_id}, berdasarkan klasifikasi Machine Learning:\nKelemahan utama: ${data.prediksi_kelemahan_utama}\nSub-topik lemah lainnya: ${data.subtopik_lemah.join(', ') ||"Tidak ada"}`);
+        alert(`Halo ${student_id}, berdasarkan klasifikasi Machine Learning:\nKelemahan utama: ${data.prediksi_kelemahan_utama}\nSub-topik lemah lainnya: ${data.subtopik_lemah.join(', ') || "Tidak ada"}`);
         console.log('Hasil dari backend:', data);
     })
     .catch(error => {
@@ -364,3 +344,4 @@ fetch('http://localhost:3000/submit-answers', {
         // player.ShowLayer("ErrorLayer");
         alert(`Terjadi kesalahan: ${error.message}`);
     });
+    

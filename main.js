@@ -669,25 +669,28 @@ app.post('/submit-answers', async (req, res) => {
 
     const scores = {};
     const skor_per_subtopik = {};
+    // ... kode sama hingga loop for (const item of subtopiks)
     for (const item of subtopiks) {
         const { subtopik, jawaban, kunci_jawaban } = item;
         console.log(`Validasi subtopik: ${subtopik}, Jawaban: ${JSON.stringify(jawaban)}, Kunci: ${JSON.stringify(kunci_jawaban)}`);
         if (!subtopik || !all_subtopik.includes(subtopik) || !Array.isArray(jawaban) || !Array.isArray(kunci_jawaban) || jawaban.length !== 5 || kunci_jawaban.length !== 5) {
             return res.status(400).json({ error: `Invalid input untuk subtopik ${subtopik}: jawaban dan kunci_jawaban harus array 5 elemen` });
         }
-        if (jawaban.some(j => j === "")) {
-            return res.status(400).json({ error: `Invalid input untuk subtopik ${subtopik}: jawaban tidak boleh kosong` });
-        }
+        // Hapus validasi kosong - anggap "" sebagai salah di hitung skor
 
         let skor = 0;
         for (let i = 0; i < jawaban.length; i++) {
-            if (String(jawaban[i]) === String(kunci_jawaban[i])) {
+            const jawab = jawaban[i] || ""; // Pastikan tidak null
+            const kunci = kunci_jawaban[i] || "";
+            if (String(jawab).trim() === String(kunci).trim()) {  // Trim untuk hilangkan spasi
                 skor++;
             }
+            console.log(`Soal ${i + 1} ${subtopik}: Jawaban '${jawab}' vs Kunci '${kunci}' = ${String(jawab).trim() === String(kunci).trim() ? 'Benar' : 'Salah'}`);
         }
         scores[subtopik] = skor;
         skor_per_subtopik[subtopik] = skor;
     }
+    // ... sisa kode sama
 
     const full_scores = {};
     all_subtopik.forEach(st => {
