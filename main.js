@@ -662,8 +662,8 @@ app.post('/submit-answers', async (req, res) => {
         'penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran',
         'kpk', 'fpb', 'penjumlahan_pecahan','pengurangan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan',
         'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat',
-        'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar',
-        'luas_permukaan_bangun_ruang', 'volume_bangun_ruang', 'data', 'peluang',
+        'waktu', 'sudut', 'keliling_bangun_datar', 'luas_bangun_datar',
+        'volume_bangun_ruang','luas_permukaan_bangun_ruang', 'data', 'peluang',
         'pembagian_desimal', 'perkalian_desimal', 'pengurangan_desimal', 'penjumlahan_desimal'
     ];
 
