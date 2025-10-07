@@ -132,7 +132,7 @@ var subtopiks = [
             player.GetVar("TextEntry114") || "",
             player.GetVar("TextEntry115") || ""
         ],
-        kunci_jawaban: ["0.3", "0.4", "0.009", "0.3", "0.6"]// Hard-code kunci jawaban
+        kunci_jawaban: ["0,3", "0,4", "0,009", "0,3", "0,6"]// Hard-code kunci jawaban
     },
     {
         subtopik: "perkalian_desimal",
@@ -143,7 +143,7 @@ var subtopiks = [
             player.GetVar("TextEntry102") || "",
             player.GetVar("TextEntry105") || ""
         ],
-        kunci_jawaban: ["0.2", "2.4", "0.009", "3", "3"] // Hard-code kunci jawaban
+        kunci_jawaban: ["0,2", "2,4", "0,009", "3", "3"] // Hard-code kunci jawaban
     },
     {
         subtopik: "pengurangan_desimal",
@@ -154,7 +154,7 @@ var subtopiks = [
             player.GetVar("TextEntry101") || "",
             player.GetVar("TextEntry104") || ""
         ],
-        kunci_jawaban: ["0.5", "1", "0.7", "0.5", "1.8"]  // Hard-code kunci jawaban
+        kunci_jawaban: ["0,5", "1", "0,7", "0,5", "1,8"]  // Hard-code kunci jawaban
     },
     {
         subtopik: "penjumlahan_desimal",
@@ -165,7 +165,7 @@ var subtopiks = [
             player.GetVar("TextEntry100") || "",
             player.GetVar("TextEntry103") || ""
         ],
-        kunci_jawaban: ["0.5", "0.2", "3.5", "1", "1.8"]  // Hard-code kunci jawaban
+        kunci_jawaban: ["0,5", "0,2", "3,5", "1", "1,8"]  // Hard-code kunci jawaban
     },
     {
         subtopik: "pola_bilangan",
@@ -197,7 +197,7 @@ var subtopiks = [
             player.GetVar("TextEntry129") || "",
             player.GetVar("TextEntry130") || ""
         ],
-        kunci_jawaban: ["3.5", "125", "350", "1.2", "500"] // Hard-code kunci jawaban
+        kunci_jawaban: ["3,5", "125", "350", "1,2", "500"] // Hard-code kunci jawaban
     }, {
         subtopik: "berat",
         jawaban: [
@@ -207,7 +207,7 @@ var subtopiks = [
             player.GetVar("TextEntry138") || "",
             player.GetVar("TextEntry134") || ""
         ],
-        kunci_jawaban: ["2000", "1500", "0.25", "5", "4"]  // Hard-code kunci jawaban
+        kunci_jawaban: ["2000", "1500", "0,25", "5", "4"]  // Hard-code kunci jawaban
     },
     {
         subtopik: "waktu",
@@ -218,7 +218,7 @@ var subtopiks = [
             player.GetVar("TextEntry140") || "",
             player.GetVar("TextEntry141") || ""
         ],
-        kunci_jawaban: ["120", "2", "2.25", "210", "1.5"]  // Hard-code kunci jawaban
+        kunci_jawaban: ["120", "2", "2,25", "210", "1,5"]  // Hard-code kunci jawaban
     },
     {
         subtopik: "sudut",
@@ -301,10 +301,12 @@ var subtopiks = [
 ];
 
 
-
 var student_id = player.GetVar("namalengkap") || "ANONIM";
 
+// Hapus filter dan validasi kosong - kirim semua sub-topik
+// Jawaban kosong ("") akan dianggap salah di back-end (skor 0)
 
+// Debug payload
 console.log("Payload dikirim ke backend:", { student_id, subtopiks });
 
 fetch('https://pature-project-7e90b5e8ea2d.herokuapp.com/submit-answers', {
@@ -329,7 +331,7 @@ fetch('https://pature-project-7e90b5e8ea2d.herokuapp.com/submit-answers', {
             skorFormatted += key + " : " + data.skor_per_subtopik[key] + ", ";
         }
         skorFormatted = skorFormatted.slice(0, -2);
-        
+
         player.SetVar("SkorFormatted", skorFormatted);
         player.SetVar("PrediksiKelemahan", data.prediksi_kelemahan_utama);
         player.SetVar("SubTopikLemah", data.subtopik_lemah.join(', ') || "Tidak ada");
@@ -344,4 +346,3 @@ fetch('https://pature-project-7e90b5e8ea2d.herokuapp.com/submit-answers', {
         // player.ShowLayer("ErrorLayer");
         alert(`Terjadi kesalahan: ${error.message}`);
     });
-    

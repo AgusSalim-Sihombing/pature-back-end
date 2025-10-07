@@ -660,7 +660,7 @@ app.post('/submit-answers', async (req, res) => {
 
     const all_subtopik = [
         'penjumlahan', 'pengurangan', 'perkalian', 'pembagian', 'operasi_campuran',
-        'kpk', 'fpb', 'penjumlahan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan',
+        'kpk', 'fpb', 'penjumlahan_pecahan','pengurangan_pecahan', 'perkalian_pecahan', 'pembagian_pecahan',
         'mengurutkan', 'pola_bilangan', 'operasi_aljabar', 'panjang', 'berat',
         'waktu', 'sudut', 'keliling_bangun_ruang', 'luas_bangun_datar',
         'luas_permukaan_bangun_ruang', 'volume_bangun_ruang', 'data', 'peluang',
